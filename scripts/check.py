@@ -3,6 +3,7 @@
 from pathlib import Path
 import json
 import subprocess
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -13,6 +14,7 @@ def run(*args):
 
 
 def main():
+    run(sys.executable, "-B", "-m", "unittest", "discover", "-s", "tests", "-p", "test_release.py")
     run("cargo", "fmt", "--check")
     run("cargo", "test", "--locked", "--lib", "--tests", "--examples")
     run("cargo", "test", "--locked", "--doc")

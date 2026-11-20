@@ -78,8 +78,9 @@ jobs:
         env:
           ZGUARD_RELEASE_TAG: ${{ needs.source.outputs.tag }}
       - name: Publish crate
-        run: cargo publish --locked
+        run: python3 scripts/release.py publish
         env:
+          ZGUARD_RELEASE_TAG: ${{ needs.source.outputs.tag }}
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
       - name: Create GitHub release
         run: python3 scripts/release.py github

@@ -103,3 +103,6 @@ The final command requires that Rust target to be installed. See
 
 The first local validation and optimized measurements are recorded in
 [docs/VALIDATION-2026-11-20.md](docs/VALIDATION-2026-11-20.md).
+
+[Release instructions](docs/RELEASING.md) describe immutable tags and verified
+registry/GitHub recovery.
