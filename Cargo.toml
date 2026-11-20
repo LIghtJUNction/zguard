@@ -1,0 +1,28 @@
+[package]
+name = "zguard"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99.1"
+description = "Lightweight Security Guardrails for AI Agents"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/LIghtJUNction/zguard"
+readme = "README.md"
+keywords = ["ai", "agents", "security", "guardrails", "no-std"]
+categories = ["no-std", "development-tools"]
+include = ["src/**", "tests/**", "examples/**", "benches/**", "scripts/*.py", "docs/**", "*.md", "LICENSE-*", "Cargo.toml", "Cargo.lock"]
+
+[dependencies]
+
+[features]
+default = []
+
+[workspace]
+members = ["."]
+
+[[bench]]
+name = "policy"
+harness = false
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
