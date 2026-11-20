@@ -63,7 +63,8 @@ its retention and access policy.
 
 Audit rejection returns Deny/AuditFailed without reserving a call. The sequence
 advances before recording, so a failed attempt is not silently assigned the same
-sequence as a later attempt. Successful recording means only the sink accepted
+sequence as a later attempt. An Allow audit event describes the decision before execution, not its result.
+The host records executor outcomes separately. Successful recording means only the sink accepted
 the event; the sink owns durable storage and tamper protection. NoAudit is an
 explicit host opt-out.
 

@@ -94,9 +94,12 @@ Natural-language prompt-injection detection is outside this core.
 ```sh
 python3 scripts/check.py
 cargo bench --locked --bench policy
-cargo check --locked --lib --target thumbv7em-none-eabi
+cargo check --locked --lib --target x86_64-unknown-none
 ```
 
 The final command requires that Rust target to be installed. See
 [SECURITY.md](SECURITY.md) for trust and approval contracts and
 [docs/VALIDATION.md](docs/VALIDATION.md) for claim-to-evidence mapping.
+
+The first local validation and optimized measurements are recorded in
+[docs/VALIDATION-2026-11-20.md](docs/VALIDATION-2026-11-20.md).

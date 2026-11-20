@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags: ["v[0-9]*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing version tag to validate and publish (v0.1.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.version.outputs.sha }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - id: version
+        name: Verify immutable release source
+        run: python3 scripts/release.py verify
+        env:
+          ZGUARD_RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+
+  validate:
+    needs: source
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify selected tag
+        run: python3 scripts/release.py verify
+        env:
+          ZGUARD_RELEASE_TAG: ${{ needs.source.outputs.tag }}
+      - name: Host security and ownership tests
+        run: python3 scripts/check.py
+      - name: Check allocator-free bare-metal library
+        if: runner.os == 'Linux'
+        run: |
+          rustup target add x86_64-unknown-none
+          cargo check --locked --lib --target x86_64-unknown-none
+      - name: Verify package
+        run: cargo package --locked
+
+  publish:
+    needs: [source, validate]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify selected tag
+        run: python3 scripts/release.py verify
+        env:
+          ZGUARD_RELEASE_TAG: ${{ needs.source.outputs.tag }}
+      - name: Publish crate
+        run: cargo publish --locked
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - name: Create GitHub release
+        run: python3 scripts/release.py github
+        env:
+          ZGUARD_RELEASE_TAG: ${{ needs.source.outputs.tag }}
+          GH_TOKEN: ${{ github.token }}
